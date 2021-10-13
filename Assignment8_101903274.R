@@ -3,34 +3,36 @@
 
 #Assignment 8
 #Ques 1
-data_reg<-read.csv('regressionDataSet.csv')
-str(data_reg)
-train<-data_reg[1:13000,]
-test<-data_reg[13001:16382,]
+data<-read.csv('regressionDataSet.csv')
+n<-length(data$RMSD)
+index<-sample(1:n,n)
+index
+train_data_len=floor(n*0.8)
+train_data=data.frame(data[index[1:train_data_len],])
+test=data.frame(data[index[train_data_len+1:n],])
+test
 
-#lm is used to fit linear models
-relation<-lm(formula=Area~Energy,data = train)
-print(relation)
-?lm
+relationlm<-lm(formula=Area~Energy,data = train_data)
+print(relationlm)
+predictedData <- predict(relationlm,test)
+test$Area
+predictedData
 
-#predict the values
-predicted<-predict(relation, test)
-
-#plot the data for visualization of best fit line
-plot(data_reg$Area,data_reg$Energy,col = "red",main = "Regression",
-     abline(relation),cex = 1.3,pch = 16,xlab = "Independent",ylab = "Dependent")
-
-#correlation between predicted and actual value of the tested data
-cor(predicted, test$Area)
+plot(data$Area,data$Energy,col = "red",main = "Regression",
+     abline(relationlm),cex = 1.3,pch = 16,xlab = "Independent",ylab = "Dependent")
+length(predictedData)
+cor(predictedData, test$Area,use = "complete.obs")
 
 #calculating root mean square error
 RMSE<-function(m, o)
 {
-  return(sqrt(mean((m-o)^2)))
+  return(sqrt(sum((m-o)^2,na.rm = TRUE)/n))
 }
 
-Accuracy<-RMSE(predicted, test$Area)
-Accuracy
+
+Accuracy<-RMSE(predictedData, test$Area)
+Accuracy/n
+
 
 #Ques 2
 x<-rpois(100, 50)
